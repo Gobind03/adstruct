@@ -1,0 +1,121 @@
+# =============================================================================
+# DEV MODE — DB + pgAdmin only (run backend/frontend locally with hot reload):
+#   docker compose up -d
+#   docker compose down
+#
+# DEV MODE — full stack (all services, Spring dev profile):
+#   docker compose --profile full up -d --build
+#   docker compose --profile full down
+#
+# PROD MODE — full stack (supply a .env.prod file with real secrets):
+#   docker compose --profile full --env-file .env.prod \
+#     -e SPRING_PROFILES_ACTIVE=prod up -d --build
+#   docker compose --profile full --env-file .env.prod down
+#
+# .env.prod should override at minimum:
+#   PG_HOST_PORT, POSTGRES_PASSWORD (via DB_PASS), JWT_SECRET, ENCRYPTION_KEY
+#
+# EC2 / production access:
+#   Frontend serves on port 80 — open port 80 (HTTP) in the Security Group inbound rules.
+#   Do NOT expose port 8080 publicly; Nginx proxies /api/* to backend internally.
+# =============================================================================
+
+version: "3.9"
+
+networks:
+  ms-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  pg-logs:
+  ms-logs:
+  pgadmin_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ms-postgres
+    networks:
+      - ms-network
+    environment:
+      POSTGRES_DB: marketsuite
+      POSTGRES_USER: marketsuite
+      POSTGRES_PASSWORD: marketsuite
+    # Enable log collector so PostgreSQL writes logs to the mounted volume
+    command: >
+      postgres
+      -c logging_collector=on
+      -c log_directory=/var/log/postgresql
+      -c log_filename=postgresql-%Y-%m-%d.log
+      -c log_rotation_age=1d
+      -c log_rotation_size=100MB
+      -c log_connections=on
+      -c log_disconnections=on
+    ports:
+      - "${PG_HOST_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pg-logs:/var/log/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketsuite -d marketsuite"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ms-pgadmin
+    networks:
+      - ms-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@avyukt.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./infra/pgadmin/servers.json:/pgadmin4/servers.json:ro
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ms-backend
+    networks:
+      - ms-network
+    environment:
+      # These values mirror the defaults in application.yml so the datasource URL resolves correctly:
+      # jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      DB_HOST: postgres        # resolves to the postgres service via ms-network DNS
+      DB_PORT: 5432            # internal Docker network port (host-mapped port 5433 is irrelevant here)
+      DB_NAME: marketsuite
+      DB_USER: marketsuite
+      DB_PASS: marketsuite
+      SPRING_PROFILES_ACTIVE: dev
+      LOGGING_FILE_NAME: /var/log/market-suite/app.log
+    ports:
+      - "8080:8080"
+    volumes:
+      - ms-logs:/var/log/market-suite
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - full
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ms-frontend
+    networks:
+      - ms-network
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    profiles:
+      - full
