@@ -28,7 +28,6 @@ networks:
 
 volumes:
   pgdata:
-  pg-logs:
   ms-logs:
   pgadmin_data:
 
@@ -42,11 +41,11 @@ services:
       POSTGRES_DB: marketsuite
       POSTGRES_USER: marketsuite
       POSTGRES_PASSWORD: marketsuite
-    # Enable log collector so PostgreSQL writes logs to the mounted volume
+    # log_directory is relative to the data dir so postgres user already owns it
     command: >
       postgres
       -c logging_collector=on
-      -c log_directory=/var/log/postgresql
+      -c log_directory=pg_log
       -c log_filename=postgresql-%Y-%m-%d.log
       -c log_rotation_age=1d
       -c log_rotation_size=100MB
@@ -56,7 +55,6 @@ services:
       - "${PG_HOST_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - pg-logs:/var/log/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U marketsuite -d marketsuite"]
       interval: 10s
