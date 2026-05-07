@@ -1,0 +1,39 @@
+# Java / Gradle
+backend/.gradle/
+backend/build/
+backend/bin/
+backend/out/
+*.class
+*.jar
+*.war
+
+# Node / Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Docker
+infra/pgadmin/data/
+infra/postgres/data/

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker info *)",
+      "Bash(java --version)",
+      "Bash(npm --version)",
+      "Read(//Library/Java/JavaVirtualMachines/**)",
+      "Read(//Users/gobind/.sdkman/candidates/**)",
+      "Read(//opt/homebrew/opt/**)",
+      "Read(//Users/gobind/.nvm/versions/node/**)",
+      "Bash(brew list *)",
+      "Bash(grep -E \"\\\\.ts$\")"
+    ]
+  }
+}

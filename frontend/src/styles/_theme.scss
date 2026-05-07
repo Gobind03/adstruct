@@ -1,0 +1,17 @@
+@use '@angular/material' as mat;
+@use 'palettes' as p;
+@use 'typography' as t;
+
+@include mat.core();
+
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: p.$ms-primary,
+    accent: p.$ms-accent,
+    warn: p.$ms-warn,
+  ),
+  typography: t.$ms-typography,
+  density: -1,
+));
+
+@include mat.all-component-themes($light-theme);
