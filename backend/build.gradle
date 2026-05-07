@@ -1,0 +1,75 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '6.25.0'
+}
+
+group = 'com.avyukt'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'com.jayway.jsonpath:json-path:2.9.0'
+}
+
+spotless {
+    java {
+        palantirJavaFormat()
+        importOrder()
+        removeUnusedImports()
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    def dockerSocket = System.getenv("DOCKER_HOST") ?: ""
+    if (dockerSocket.isEmpty()) {
+        def colimaSocket = "${System.getProperty('user.home')}/.colima/default/docker.sock"
+        if (new File(colimaSocket).exists()) {
+            environment 'DOCKER_HOST', "unix://${colimaSocket}"
+            environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', "/var/run/docker.sock"
+        }
+    }
+    environment 'TESTCONTAINERS_RYUK_DISABLED', 'true'
+}

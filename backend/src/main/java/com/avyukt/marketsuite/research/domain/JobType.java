@@ -1,0 +1,12 @@
+package com.avyukt.marketsuite.research.domain;
+
+public enum JobType {
+    SNAPSHOT_IMPORT,
+    SNAPSHOT_DISCOVERY,
+    INSIGHT_GENERATION,
+    REFRESH_WATCHLIST,
+    AI_SUMMARIZE_SNAPSHOT,
+    AI_EXTRACT_INSIGHTS,
+    AI_CLUSTER_KEYWORDS,
+    AI_WEEKLY_DIGEST
+}

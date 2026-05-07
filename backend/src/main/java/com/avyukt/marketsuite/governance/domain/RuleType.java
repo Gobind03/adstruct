@@ -1,0 +1,14 @@
+package com.avyukt.marketsuite.governance.domain;
+
+public enum RuleType {
+    BANNED_PHRASE,
+    REQUIRED_DISCLAIMER,
+    CLAIM_RESTRICTION,
+    PLATFORM_POLICY,
+    TARGETING_RESTRICTION,
+    VISUAL_RESTRICTION,
+    LINK_RESTRICTION,
+    CTA_RESTRICTION,
+    LOCALIZATION_RULE,
+    DATA_PRIVACY_RULE
+}

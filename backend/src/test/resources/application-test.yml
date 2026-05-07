@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
+
+app:
+  jwt:
+    secret: test-secret-key-for-testing-only-must-be-at-least-256-bits-long-enough
+    expiration-ms: 3600000
+    refresh-expiration-ms: 86400000
+  encryption:
+    key: 0123456789abcdef0123456789abcdef
+  seed-data:
+    enabled: true
+  ai:
+    enable-custom-http: false
+    default-provider: MOCK
+    max-conversation-messages: 50
